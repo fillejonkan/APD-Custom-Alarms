@@ -1,0 +1,58 @@
+{
+    "schemaVersion": "1.0",
+    "acapPackageConf": {
+        "setup": {
+            "friendlyName": "APDCustomAlarms",
+            "appName": "apdcustomalarms",
+            "vendor": "Axis Communications",
+            "embeddedSdkVersion": "3.0",
+            "user": {
+                "group": "sdk",
+                "username": "sdk"
+            },
+            "vendorUrl": "\\'''\\",
+            "runMode": "once",
+            "version": "1.3.0"
+        },
+        "copyProtection": {
+            "method": "none"
+        },
+        "configuration": {
+            "settingPage": "main.shtml",
+            "httpConfig": [
+                {
+                    "access": "admin",
+                    "name": "settings/set",
+                    "type": "transferCgi"
+                },
+                {
+                    "access": "viewer",
+                    "name": "settings/get",
+                    "type": "transferCgi"
+                }
+            ],
+            "paramConfig": [
+                {
+                    "name": "Username",
+                    "default": "root",
+                    "type": "hidden:string"
+                },
+                {
+                    "name": "Password",
+                    "default": "pass",
+                    "type": "hidden:string"
+                },
+                {
+                    "name": "Scenario1",
+                    "default": "zone-crossing-1",
+                    "type": "hidden:string"
+                },
+                {
+                    "name": "Scenario2",
+                    "default": "conditional-1",
+                    "type": "hidden:string"
+                }
+            ]
+        }
+    }
+}

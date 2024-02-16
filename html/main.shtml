@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible"/>
+<title>APD Custom Alarms</title>
+
+<script src="jquery-1.10.2.js"></script>
+<script src="jquery.ui.core.js"></script>
+<script src="jquery.ui.widget.js"></script>
+<script src="jquery.ui.tabs.js"></script>
+<script src="camera_services.1.0.0.js"></script>
+<link href="css/cupertino/jquery-ui-1.10.4.custom.min.css" rel="stylesheet">
+
+<script>
+
+var APP_ID = "apdcustomalarms";
+
+$(function() {  //jQuery UI TAB initialize
+  $( "#tabs" ).tabs();
+  // Hover states on the static widgets
+  $( "#dialog-link, #icons li" ).hover(
+    function() {
+      $( this ).addClass( "ui-state-hover" );
+    },
+    function() {
+      $( this ).removeClass( "ui-state-hover" );
+    }
+  );
+});
+
+$(document).ready( function() {
+
+  requestApplicationSettings();
+  loadApplicationLog(APP_ID, printLog ); //camera_services.1.0.0.js
+  loadEventDeclarations( printEventDeclaration ); //camera_services.1.0.0.js 
+
+  //Update the application parameters when user change
+  
+  $( "#Scenario1" ).keypress( function (eventObject) {
+    var key = eventObject.keyCode || eventObject.charCode;
+    if( key == 13 ){
+      $( "#Scenario1" ).blur();
+      eventObject.preventDefault();
+      $.ajax({ type: "GET", url: "settings/set?param=Scenario1&value=" + $( "#Scenario1" ).val(), dataType: "xml",cache: false, success: checkErrorMessage, error: noResponseError});
+    }
+  });
+  
+  $( "#Scenario2" ).keypress( function (eventObject) {
+    var key = eventObject.keyCode || eventObject.charCode;
+    if( key == 13 ){
+      $( "#Scenario2" ).blur();
+      eventObject.preventDefault();
+      $.ajax({ type: "GET", url: "settings/set?param=Scenario2&value=" + $( "#Scenario2" ).val(), dataType: "xml",cache: false, success: checkErrorMessage, error: noResponseError});
+    }
+  });
+
+  $( "#Username" ).keypress( function (eventObject) {
+    var key = eventObject.keyCode || eventObject.charCode;
+    if( key == 13 ){
+      $( "#Username" ).blur();
+      eventObject.preventDefault();
+      $.ajax({ type: "GET", url: "settings/set?param=Username&value=" + $( "#Username" ).val(), dataType: "xml",cache: false, success: checkErrorMessage, error: noResponseError});
+    }
+  });
+
+  $( "#Password" ).keypress( function (eventObject) {
+    var key = eventObject.keyCode || eventObject.charCode;
+    if( key == 13 ){
+      $( "#Password" ).blur();
+      eventObject.preventDefault();
+      $.ajax({ type: "GET", url: "settings/set?param=Password&value=" + $( "#Password" ).val(), dataType: "xml",cache: false, success: checkErrorMessage, error: noResponseError});
+    }
+  });
+
+  $('#SaveAll').click(function(){
+  	$.ajax({ type: "GET", url: "settings/set?param=Password&value=" + $( "#Password" ).val(), dataType: "xml",cache: false, success: checkErrorMessage, error: noResponseError});
+  	$.ajax({ type: "GET", url: "settings/set?param=Username&value=" + $( "#Username" ).val(), dataType: "xml",cache: false, success: checkErrorMessage, error: noResponseError});
+  	$.ajax({ type: "GET", url: "settings/set?param=Scenario2&value=" + $( "#Scenario2" ).val(), dataType: "xml",cache: false, success: checkErrorMessage, error: noResponseError});
+  	$.ajax({ type: "GET", url: "settings/set?param=Scenario1&value=" + $( "#Scenario1" ).val(), dataType: "xml",cache: false, success: checkErrorMessage, error: noResponseError});
+  });
+
+  //Update log on refresh
+  $( "#refresh_log" ).click(function(){loadApplicationLog(APP_ID, printLog);});
+});
+
+function requestApplicationSettings()
+{
+  $.ajax({
+    type: "GET",
+    url: "settings/get",
+    dataType: "xml",
+    cache: false,
+    success: function( responseData ){
+      if( checkErrorMessage( responseData ) )
+        return;
+      var Parameters = $(responseData).find("param");
+      /*var param;
+      for(param in Parameters)
+        $("#"+param.getAttribute("name")).val( param.getAttribute("value") );
+      */
+      $("#Scenario1").val( Parameters[0].getAttribute("value") );
+      $("#Scenario2").val( Parameters[1].getAttribute("value") );
+      $("#Username").val( Parameters[2].getAttribute("value") );
+      $("#Password").val( Parameters[3].getAttribute("value") );
+    },
+    error: noResponseError
+  });
+}
+
+//Check if the application replies an error e.g. <error description="Some description"/>
+//Returns TRUE if an error response is detected
+function checkErrorMessage( responseData )
+{
+  var errors = $(responseData).find("error");  //Error message from the application
+  if( errors.length ) {
+    alert( errors[0].getAttribute("description") ); //Alert only the first message
+    return true;
+  }
+  return false;
+}
+
+//The application does not respond at all
+function noResponseError()
+{
+  alert("No response from application.\n\nCheck if the application is running.");
+}
+
+function printEventDeclaration( xmlData )
+{
+  var applicationEvents = xmlSubSection( xmlData, APP_ID );  //Show only the events for the application
+  var formatedXML = prettyXML( applicationEvents ); //camera_services.1.0.0.js
+  $("#textarea_event_declarations").val( formatedXML );
+}
+
+function printLog( text )
+{
+  var formatedLog = prettyLOG( text );  //camera_services.1.0.0.js
+  $("#textarea_log").val( formatedLog );
+}
+</script>
+
+</head>
+
+<body>
+  <div id="tabs">
+    <ul>
+      <li><a href="#tabs-1">Parameters</a></li>
+      <li><a href="#tabs-3">LOG</a></li>
+    </ul>
+    <div id="tabs-1">
+      <h2>Application parameters</h2>
+      <table>
+        <tr>
+          <td>Scenario 1</td>
+          <td><input id="Scenario1"></td>
+          <td>Name of first APD Scenario</td>
+        </tr>
+        <tr>
+          <td>Scenario 2</td>
+          <td><input id="Scenario2"></td>
+          <td>Name of second APD Scenario</td>
+        </tr>
+        <tr>
+          <td>Username</td>
+          <td><input id="Username"></td>
+          <td>Administrator username on camera</td>
+        </tr>
+        <tr>
+          <td>Password</td>
+          <td><input id="Password" type="password"></td>
+          <td>Administrator password on camera</td>
+        </tr>
+      </table>
+      <br/>
+      <br/>
+      <input type="button" value="Save Values" id="SaveAll" >
+      <br/>
+      <br/>
+      <a href="../../axis-cgi/param.cgi?action=list" target="_blank">View the cameras parameter list</a>
+    </div>
+    <div id="tabs-3">
+      <h2>Application log</h2>
+      <button id="refresh_log">Refresh</button>
+      <br/>
+      <textarea id="textarea_log" rows="10" cols="100"></textarea>
+    </div>
+  </div>
+</body>
+
+</html>
+
+
